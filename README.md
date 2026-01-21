@@ -35,6 +35,9 @@ Private Key: 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
 - `POST /deployments` - Deploy a new token
 - `POST /tokens/:address/*` - Token write operations (transfer, mint, etc.)
 - `GET /tokens/:address/*` - Token read operations (balance, allowance, etc.)
+- `GET /admin/store/stats` - Get database statistics
+- `DELETE /admin/store/clear` - Clear all database tables
+- `POST /admin/store/reset` - Reset database (preserves token templates)
 
 ### 3. Frontend Dashboard
 - **URL**: `http://localhost:5173`
@@ -92,10 +95,48 @@ Click any token card to view detailed information including:
 - Allowlisted addresses and their balances
 - Transaction history
 
-## Stopping the Stack
+## Managing the Development Stack
 
-To stop all running services:
+### Quick Start/Stop Scripts
 
+**Start all services (Anvil, Backend, Frontend):**
+```bash
+./start-dev.sh
+```
+
+This will start:
+- Anvil on port 8545 (logs: `logs/anvil.log`)
+- Backend on port 3000 (logs: `logs/backend.log`)
+- Frontend on port 5173 (logs: `logs/frontend.log`)
+
+**Stop all services:**
+```bash
+./stop-dev.sh
+```
+
+**View logs:**
+```bash
+tail -f logs/anvil.log
+tail -f logs/backend.log
+tail -f logs/frontend.log
+```
+
+### Manual Control
+
+If you prefer to start services individually:
+
+```bash
+# Start Anvil
+cd smartcontract && anvil
+
+# Start Backend
+cd backend && bun run dev
+
+# Start Frontend
+cd frontend && bun dev
+```
+
+To stop manually:
 ```bash
 # Stop Anvil
 pkill -f anvil
@@ -105,11 +146,6 @@ pkill -f "bun run dev"
 
 # Stop frontend (or just Ctrl+C in the terminal)
 pkill -f "vite"
-```
-
-Or use the task management commands:
-```bash
-/tasks         # List all running tasks
 ```
 
 ## Troubleshooting
@@ -138,6 +174,35 @@ Check that the backend is running and accessible:
 ```bash
 curl http://localhost:3000/deployments
 ```
+
+## Database Management
+
+The backend includes admin endpoints for managing the database:
+
+**Check database statistics:**
+```bash
+curl http://localhost:3000/admin/store/stats
+```
+
+**Clear all tables:**
+```bash
+curl -X DELETE http://localhost:3000/admin/store/clear \
+  -H "Content-Type: application/json" \
+  -d '{"confirmation": "DELETE ALL DATA"}'
+```
+
+**Reset database (preserves token contract templates):**
+```bash
+curl -X POST http://localhost:3000/admin/store/reset \
+  -H "Content-Type: application/json" \
+  -d '{"confirmation": "DELETE ALL DATA"}'
+```
+
+Alternatively, you can use the SQL scripts in `backend/scripts/`:
+- `clear-db.sh` - Interactive script to clear database
+- `clear-database.sql` - PostgreSQL clear script
+- `clear-database-mysql.sql` - MySQL clear script
+- `clear-database-sqlite.sql` - SQLite clear script
 
 ## Development Workflow
 
