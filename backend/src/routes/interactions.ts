@@ -610,6 +610,27 @@ export const interactionsRoute = new Elysia({ prefix: "/tokens/:address" })
           }
         });
 
+        // Also include all allowlisted addresses (even if they have 0 balance)
+        const allowlistLength = await publicClient.readContract({
+          address: contractAddress as Hex,
+          abi: tokenContract.abi as any,
+          functionName: "getAllowlistLength",
+          args: [],
+        });
+        const allowlistAddresses = await Promise.all(
+          Array.from({ length: Number(allowlistLength as bigint) }, (_, i) =>
+            publicClient.readContract({
+              address: contractAddress as Hex,
+              abi: tokenContract.abi as any,
+              functionName: "getAllowlistAddress",
+              args: [BigInt(i)],
+            }),
+          ),
+        );
+        allowlistAddresses.forEach((addr) => {
+          if (addr) uniqueAddresses.add(addr as string);
+        });
+
         // Check balance and allowlist status for each address
         const balanceHolders = await Promise.all(
           Array.from(uniqueAddresses).map(async (address) => {
@@ -636,14 +657,9 @@ export const interactionsRoute = new Elysia({ prefix: "/tokens/:address" })
           }),
         );
 
-        // Filter out addresses with zero balance
-        const holdersWithBalance = balanceHolders.filter(
-          (holder) => BigInt(holder.balance) > 0n,
-        );
-
         return {
           success: true,
-          data: holdersWithBalance,
+          data: balanceHolders,
         };
       } catch (err: any) {
         return error(500, {

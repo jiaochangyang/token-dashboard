@@ -120,13 +120,13 @@ export const databaseRoute = new Elysia({ prefix: "/database" })
       await db.execute(sql`SET session_replication_role = 'replica'`);
 
       await db.execute(
-        sql.raw(`TRUNCATE TABLE transactions RESTART IDENTITY CASCADE`)
+        sql.raw(`TRUNCATE TABLE transactions RESTART IDENTITY CASCADE`),
       );
       await db.execute(
-        sql.raw(`TRUNCATE TABLE deployments RESTART IDENTITY CASCADE`)
+        sql.raw(`TRUNCATE TABLE deployments RESTART IDENTITY CASCADE`),
       );
       await db.execute(
-        sql.raw(`TRUNCATE TABLE token_contracts RESTART IDENTITY CASCADE`)
+        sql.raw(`TRUNCATE TABLE token_contracts RESTART IDENTITY CASCADE`),
       );
 
       await db.execute(sql`SET session_replication_role = 'origin'`);
@@ -149,58 +149,15 @@ export const databaseRoute = new Elysia({ prefix: "/database" })
       };
     } catch (error) {
       try {
-        // Clear only deployment-related tables, preserve token_contracts
-        await db.execute(sql`SET session_replication_role = 'replica'`);
-
-        // Clear transactions first (has FK to deployments)
-        await db.execute(
-          sql.raw(`TRUNCATE TABLE transactions RESTART IDENTITY CASCADE`),
-        );
-
-        // Clear deployments (has FK to token_contracts, but we preserve token_contracts)
-        await db.execute(
-          sql.raw(`TRUNCATE TABLE deployments RESTART IDENTITY CASCADE`),
-        );
-
-        // NOTE: token_contracts table is intentionally preserved
-
         await db.execute(sql`SET session_replication_role = 'origin'`);
+      } catch {}
 
-        // Get count of preserved token contracts
-        const [contractsCount] = await db.execute(
-          sql`SELECT COUNT(*) as count FROM token_contracts`,
-        );
-
-        // Re-seed deployment data if seed file exists
-        let seeded = false;
-        try {
-          const { seedDatabase } = await import("../seed");
-          await seedDatabase();
-          seeded = true;
-        } catch (error) {
-          // Seed file might not exist, that's okay
-        }
-
-        return {
-          success: true,
-          message: seeded
-            ? "Database reset and reseeded successfully (token templates preserved)"
-            : "Database reset successfully (token templates preserved)",
-          preserved: {
-            token_contracts: Number(contractsCount.count),
-          },
-        };
-      } catch (error) {
-        try {
-          await db.execute(sql`SET session_replication_role = 'origin'`);
-        } catch {}
-
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : "Unknown error",
-        };
-      }
-    },
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
     {
       body: t.Object({
         confirmation: t.String(),
