@@ -1,5 +1,5 @@
 {
-  "id": "7f7acc27-47fd-4b89-9e3b-4ddd4cdc088e",
+  "id": "b64f8536-62f6-46b9-9f4a-f59186b4fbd1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -49,6 +49,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "gas_used": {
+          "name": "gas_used",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "deployed_at": {
           "name": "deployed_at",
@@ -207,6 +213,12 @@
         },
         "gas_used": {
           "name": "gas_used",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_message": {
+          "name": "error_message",
           "type": "text",
           "primaryKey": false,
           "notNull": false

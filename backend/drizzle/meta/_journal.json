@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1768635537876,
-      "tag": "0000_tiresome_rictor",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1768637830240,
-      "tag": "0001_swift_sabra",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1768665896782,
-      "tag": "0002_mushy_viper",
+      "when": 1772056496784,
+      "tag": "0000_square_thor",
       "breakpoints": true
     }
   ]
